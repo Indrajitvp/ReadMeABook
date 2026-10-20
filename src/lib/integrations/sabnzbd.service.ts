@@ -927,7 +927,11 @@ export class SABnzbdService implements IDownloadClient {
     } else if (statusLower.includes('repairing') || statusLower.includes('verifying')) {
       state = 'repairing';
     } else if (percent >= 1.0) {
-      state = 'completed';
+      // 100% in the queue is the tail of file assembly (and direct unpack). SABnzbd
+      // then moves the job to history for post-processing (Verifying, Repairing,
+      // Extracting, Moving, Running); only a Completed history slot has the final
+      // storage path, so this is not completion yet.
+      state = 'extracting';
     }
 
     return {
