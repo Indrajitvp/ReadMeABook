@@ -329,6 +329,9 @@ src/app/admin/settings/
 - Updates indexer configuration (enabled, priority, RSS, categories, seeding time, ratio limit, remove-after-processing)
 - No test required if URL/API key unchanged
 - Saves only enabled indexers to database, each normalized by `toSavedIndexerConfig()`
+- Body: `{ indexers: [...], flagConfigs?, allowEmpty? }`; body not JSON or `indexers` not an array → 400
+- Torrent `seedingTimeMinutes` / `ratioLimit` (usenet not checked, discarded): missing ok (→ 0), else finite number ≥ 0 → else 400 `<name>: <field> must be a number of 0 or more` (`invalidIndexerLimit()`); nothing saved
+- Empty list while indexers are saved and `allowEmpty !== true` → 409 (nothing saved, flags included). The settings page sends `allowEmpty: true` only for a confirmed connection-change clear or when the admin removed every loaded indexer
 
 **GET /api/admin/settings/indexer-options**
 - Returns `{ skipUnreleased: boolean }`
@@ -427,6 +430,17 @@ src/app/admin/settings/
 - Cause: `fetchIndexers()` in `src/app/admin/settings/page.tsx` rebuilt each indexer by hand and left out `ratioLimit`; the GET and PUT routes kept their own copies of the same field list
 - Fix: one mapping, `toSavedIndexerConfig()` (`src/lib/utils/indexer-config.ts`), used by the page, GET and PUT, and setup completion (`POST /api/setup/complete`); round trip covered by `tests/app/admin-settings-indexer-roundtrip.test.tsx`
 - Upgrade note: ratio limits already reset to `0` by this bug cannot be recovered; re-enter them per indexer (Settings → Indexers → Edit) and save
+
+**5. Indexer Settings Wiped When Prowlarr Was Unreachable**
+- Issue: GET indexers failed → Indexers tab showed an empty list → any save on that tab PUT `[]`, wiping `prowlarr_indexers` and `indexer_flag_config`
+- Fix (`useConfiguredIndexers`, `src/app/admin/settings/lib/useConfiguredIndexers.ts`):
+  - `indexersLoaded`: true after a successful GET (incl. via Test Connection or Fetch Indexers) or a confirmed connection-change clear; a later failed refresh keeps it and the edits
+  - `savePlan`: PUT indexers/flags only when loaded AND changed (or cleared); `allowEmpty` only for a clear or "removed every loaded indexer". A Prowlarr returning 200 with no indexers + an unrelated save → no PUT
+  - Not loaded: add/edit/remove and flag rules are disabled with a note (`IndexerManagement` `lockedReason`, fieldsets); save stores URL/key/options only and says so; after saving a changed connection the list is fetched again
+  - Connection-change confirm also appears when the list was not loaded (`useIndexersSettings`: `count > 0 || !indexersLoaded`). Not loaded → extra choice "Keep saved indexers" (same Prowlarr at a new address): tests without clearing; after saving, the list is loaded from the new address. "Continue" = different instance: clears indexers
+  - Flag rules are instance-independent: sent (`flagConfigs`) only when they were loaded (`savePlan.saveFlags`); a clear after a failed load leaves `indexer_flag_config` untouched (PUT without `flagConfigs` = unchanged). Flag editing stays locked until they load
+  - Saving while the list is unavailable (or still loading) reports success and says the saved indexers were left as they are
+  - PUT refuses an empty list over saved indexers without `allowEmpty` (protects older open tabs)
 
 ## Notifications
 
