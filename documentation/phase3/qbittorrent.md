@@ -6,7 +6,12 @@ Free, open-source BitTorrent client with comprehensive Web API.
 
 ## Enterprise Torrent Addition
 
-**Challenge:** `/api/v2/torrents/add` returns only "Ok." without torrent hash.
+**Responses:** `/api/v2/torrents/add` returns legacy `Ok.` text, or a JSON receipt from qBittorrent 5.2.
+
+- Magnet and file uploads both accept `Ok.` (older clients).
+- JSON must confirm exactly the submitted hash (case-insensitive): `success_count: 1`, `failure_count: 0`, `pending_count: 0`, one matching `added_torrent_ids` entry.
+- Pending, malformed, mismatched and rejected bodies stay errors; HTTP 200 alone does not confirm the add.
+- Hash extraction and the duplicate check are unchanged (`isAddAccepted()` in `qbittorrent.service.ts`).
 
 **Solution (Professional):**
 
@@ -191,6 +196,10 @@ type TorrentState =
   // Other
   | 'checkingResumeData' | 'moving';
 ```
+
+## Critical Issues
+
+- **Hybrid and base32 hashes (known limit, follow-up):** a 5.2+ receipt carries qBittorrent's best hash, which is the truncated v2 hash for hybrid (v1+v2) torrents on libtorrent-2 builds. RMAB compares it with the v1 hash (parse-torrent) or a base32 magnet hash kept as base32, so those adds are reported failed although qBittorrent took them. Tracking them was already broken before 5.2: `getTorrent()` only matches `t.hash`.
 
 ## Fixed Issues ✅
 
