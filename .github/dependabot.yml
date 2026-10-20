@@ -30,13 +30,19 @@ updates:
       # tests fail on it); a major needs a migration of that code. Upgrade by hand.
       - dependency-name: "zod"
         update-types: ["version-update:semver-major"]
-      # ioredis backs the startup Redis readiness check (Bull brings its own copy for the queue).
-      # PR CI mocks it and has no Redis, so a major can't be checked there. Upgrade by hand.
+      # ioredis is the Redis client for the job queue (Bull uses this same copy) and the startup
+      # readiness check. PR CI mocks it and has no Redis, so a major can't be checked there. Upgrade by hand.
       - dependency-name: "ioredis"
         update-types: ["version-update:semver-major"]
       # An eslint major has to be checked against eslint-config-next, and PR CI doesn't run the
       # linter. Upgrade by hand.
       - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      # vitest 5 fails this test suite. Closing a grouped PR doesn't stop Dependabot reopening
+      # it, so vitest majors are ignored here and moved by hand when there is a reason to.
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitest/*"
         update-types: ["version-update:semver-major"]
     groups:
       # Listed first: Dependabot puts a dependency in the FIRST group that matches,
