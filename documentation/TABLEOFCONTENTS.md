@@ -129,6 +129,7 @@
 - **Environment variables, volumes** → [deployment/docker.md](deployment/docker.md)
 - **TLS errors after upgrading to Node 24 (`dh key too small`, `EE certificate key too weak`, `Issuer.discover() failed.`, SABnzbd/NZBGet "SSL/TLS certificate error")** → [deployment/unified.md](deployment/unified.md#tls-errors-after-upgrading-to-node-24)
 - **Volume mapping (download clients)** → [deployment/volume-mapping.md](deployment/volume-mapping.md)
+- **Windows laptop setup plan (Docker + Audiobookshelf + offline phone listening)** → [deployment/local-laptop-setup-plan.md](deployment/local-laptop-setup-plan.md)
 - **Database setup (Prisma), migrations** → [deployment/docker.md](deployment/docker.md)
 - **CI workflows (GitHub Actions), tag-only image publishing, action SHA pins** → [deployment/ci-workflows.md](deployment/ci-workflows.md)
 
