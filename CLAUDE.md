@@ -1,6 +1,6 @@
 # CLAUDE.md - Project Standards & Workflow
 
-**Critical:** This document defines AI-optimized documentation standards and development workflow. **Commit freely on branches. NEVER push to `main`: all work lands on `main` through a PR. Releases (version bumps, `v*` tags) are Zach's only.**
+**Critical:** This document defines AI-optimized documentation standards and development workflow. **Commit freely. Pushing directly to `main` is allowed in this fork (`Indrajitvp/ReadMeABook`); a PR is optional. Never force-push `main`. Releases (version bumps, `v*` tags) are Zach's only.**
 
 **ALWAYS DO:** When you feel work is complete, you MUST verify BOTH of the following pass before reporting the work as ready to test:
 1. `docker compose build readmeabook` — must succeed with no errors.
